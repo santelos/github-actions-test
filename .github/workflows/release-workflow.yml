@@ -28,7 +28,14 @@ jobs:
         with:
           push: ${{ github.event_name == 'push' }}
           tags: ghcr.io/${{ github.repository }}-prerelease:${{ github.sha }}
-        
+      
+      - name: Comment PR with Docker Image
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: thollander/actions-comment-pull-request@master
+        with:
+          message: 'Example of message !'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Release Drafter
         if: ${{ github.event_name == 'push' }}
         uses: release-drafter/release-drafter@v5.15.0
