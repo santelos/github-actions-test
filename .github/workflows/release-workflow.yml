@@ -24,6 +24,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Build image
+        id: build
         uses: docker/build-push-action@v2.3.0
         with:
           push: ${{ github.event_name == 'push' }}
@@ -31,9 +32,9 @@ jobs:
       
       - name: Comment PR with Docker Image
         if: ${{ github.event_name == 'pull_request' }}
-        uses: thollander/actions-comment-pull-request@master
+        uses: thollander/actions-comment-pull-request@0.3.0
         with:
-          message: 'Example of message !'
+          message: "Bulded Docker image: ${{ steps.retag.outputs.digest }}"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Release Drafter
