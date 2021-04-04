@@ -31,11 +31,13 @@ jobs:
           tags: ghcr.io/${{ github.repository }}-prerelease:${{ github.sha }}
       
       - name: Comment PR with Docker Image
-        if: ${{ github.event_name == 'pull_request' }}
-        uses: thollander/actions-comment-pull-request@master
+        uses: actions/github-script@0.3.0
+        if: github.event_name == 'pull_request'
         with:
-          message: "Bulded Docker image: ${{ steps.build.outputs.digest }}"
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.issues.createComment({ issue_number, owner, repo, body: "Bulded Docker image: ${{ steps.build.outputs.digest }}" });
       
       - name: Release Drafter
         if: ${{ github.event_name == 'push' }}
