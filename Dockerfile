@@ -1,2 +1,2 @@
 FROM scratch
-RUN touch testFile
+COPY ./README.md
