@@ -7,7 +7,7 @@ on:
       
 env:
   BASE_IMAGE_NAME: ghcr.io/${{ github.repository }}
-  PRERELEASE_IMAGE_NAME: "${{ env.BASE_IMAGE_NAME }}-prerelase:${{ github.sha }}"
+  PRERELEASE_IMAGE_NAME: ${{ env.BASE_IMAGE_NAME }}-prerelase:${{ github.sha }}
       
 jobs:
   push:
