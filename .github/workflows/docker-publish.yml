@@ -24,7 +24,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Pull pre-release
-        run: docker pull "${PRERELEASE_IMAGE_NAME}"
+        run: docker pull ${PRERELEASE_IMAGE_NAME}
       
       - name: Retag pre-release
         id: retag
