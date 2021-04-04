@@ -1,2 +1,2 @@
 FROM scratch
-COPY ./README.md
+COPY ./README.md .
