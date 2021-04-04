@@ -1,0 +1,17 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Release Drafter
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  release-drafter:
+    runs-on: ubuntu-latest
+    steps:  
+      - name: Release Drafter
+        uses: release-drafter/release-drafter@v5.15.0
+        with:
+          publish: true
+          disable-autolabeler: true
