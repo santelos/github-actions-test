@@ -12,10 +12,7 @@ env:
 jobs:
   push:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -24,7 +21,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Pull pre-release
-        run: docker pull ${PRERELEASE_IMAGE_NAME}
+        run: docker pull ${{ env.PRERELEASE_IMAGE_NAME }}
       
       - name: Retag pre-release
         id: retag
@@ -38,11 +35,11 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "master" ] && VERSION=latest
           
-          echo IMAGE_ID=${BASE_IMAGE_NAME}
+          echo IMAGE_ID=${{ env.BASE_IMAGE_NAME }}
           echo VERSION=$VERSION
           
-          docker tag "${PRERELEASE_IMAGE_NAME}" $IMAGE_ID:$VERSION
-          echo "::set-output name=RELEASE_IMAGE::${IMAGE_ID}:${VERSION}"
+          docker tag "${{ env.PRERELEASE_IMAGE_NAME }}" ${{ env.BASE_IMAGE_NAME }}:$VERSION
+          echo "::set-output name=RELEASE_IMAGE::${{ env.BASE_IMAGE_NAME }}:${VERSION}"
         
       - name: Push release
         run: docker push ${{ steps.retag.outputs.RELEASE_IMAGE }}
