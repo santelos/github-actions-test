@@ -1,15 +1,18 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Release Workflow
+name: Test & Build
 
 on:
   push:
     branches: [ master ]
   pull_request: 
+  
+env: 
+  IMAGE_ID: ghcr.io/${{ github.repository }}-prerelease:${{ github.sha }}
 
 jobs:
-  release-drafter:
-    name: Release Drafter
+  build-push:
+    name: Build image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,8 +30,10 @@ jobs:
         id: build
         uses: docker/build-push-action@v2.3.0
         with:
-          push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/${{ github.repository }}-prerelease:${{ github.sha }}
+          tags: ${{ env.IMAGE_ID }}
+          
+      - name: Test compile
+        run: docker run -it --entrypoint="" ${{ env.IMAGE_ID }} python -m py_compile ./main.py
       
       - name: Release Drafter
         if: ${{ github.event_name == 'push' }}
