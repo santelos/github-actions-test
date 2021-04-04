@@ -32,7 +32,7 @@ jobs:
       
       - name: Comment PR with Docker Image
         if: ${{ github.event_name == 'pull_request' }}
-        uses: thollander/actions-comment-pull-request@0.3.0
+        uses: thollander/actions-comment-pull-request@master
         with:
           message: "Bulded Docker image: ${{ steps.build.outputs.digest }}"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
