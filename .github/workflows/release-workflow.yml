@@ -34,7 +34,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         uses: thollander/actions-comment-pull-request@0.3.0
         with:
-          message: "Bulded Docker image: ${{ steps.retag.outputs.digest }}"
+          message: "Bulded Docker image: ${{ steps.build.outputs.digest }}"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Release Drafter
