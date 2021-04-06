@@ -8,6 +8,7 @@ on:
 env:
   BASE_IMAGE_NAME: ghcr.io/${{ github.repository }}
   PRERELEASE_IMAGE_NAME: ghcr.io/${{ github.repository }}-prerelease:${{ github.sha }}
+  SERVICE_NAME: parser
       
 jobs:
   push:
@@ -44,6 +45,18 @@ jobs:
       - name: Push release
         run: docker push ${{ steps.retag.outputs.RELEASE_IMAGE }}
         
+      - name: Deploy with SSH
+        uses: appleboy/ssh-action@master
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          script: |
+            cd /opt/parser_env
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login https://ghcr.io -u "${{ github.actor }}" --password-stdin
+            docker-compose pull ${{ env.SERVICE_NAME }}
+            docker-compose up -d ${{ env.SERVICE_NAME }}
+            docker logout https://ghcr.io
         
         
       
