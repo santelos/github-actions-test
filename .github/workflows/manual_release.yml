@@ -1,6 +1,10 @@
 name: Manually triggered workflow
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Verison to release (major, minor, patch)'
+        required: true
 
 jobs:
   build:
