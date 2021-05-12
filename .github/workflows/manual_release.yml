@@ -7,9 +7,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
+      
+      - name: 'Get Previous tag'
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+      - name: 'Get next versions available'
+        id: semvers
+        uses: "WyriHaximus/github-action-next-semvers@v1"
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
+
+      - name: Resolve release version
+        id: nextvers
+        run: |
+          if [ "${{ github.event.inputs.version }}" = "major" ]; then 
+            echo "::set-output name=RELEASE_VERSION::${{ steps.semvers.outputs.major }}"
+          elif [ "${{ github.event.inputs.version }}" = "minor" ]; then
+            echo "::set-output name=RELEASE_VERSION::${{ steps.semvers.outputs.minor }}"
+          elif [ "${{ github.event.inputs.version }}" = "patch" ]; then
+            echo "::set-output name=RELEASE_VERSION::${{ steps.semvers.outputs.patch }}"
+          else
+            echo "Please specify either 'major', 'minor', 'patch' version"
+            exit 1
+          fi
+
       - uses: release-drafter/release-drafter@v5
         with:
           disable-autolabeler: true
           publish: true
+          version: ${{ steps.nextvers.outputs.RELEASE_VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
