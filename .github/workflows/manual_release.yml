@@ -7,7 +7,8 @@ on:
         required: true
 
 jobs:
-  build:
+  release:
+    name: Release creation
     runs-on: ubuntu-latest
 
     steps:
@@ -15,10 +16,10 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: 'Get Previous tag'
+      - name: Get Previous tag
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
-      - name: 'Get next versions available'
+      - name: Get next versions available
         id: semvers
         uses: "WyriHaximus/github-action-next-semvers@v1"
         with:
@@ -39,9 +40,10 @@ jobs:
           fi
 
       - uses: release-drafter/release-drafter@v5
+        name: Publish the release with Release Drafter
         with:
           disable-autolabeler: true
           publish: true
           version: ${{ steps.nextvers.outputs.RELEASE_VERSION }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
