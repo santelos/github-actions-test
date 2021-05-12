@@ -1,18 +1,19 @@
-name: Deploy
+name: On New Tag
 
 on:
   push:
     tags:
       - v*
-      
+
 env:
   BASE_IMAGE_NAME: ghcr.io/${{ github.repository }}
-  PRERELEASE_IMAGE_NAME: ghcr.io/${{ github.repository }}-prerelease:${{ github.sha }}
-  SERVICE_NAME: parser
-      
+  PRERELEASE_IMAGE_NAME: ghcr.io/${{ github.repository }}-rc:${{ github.sha }}
+  SERVICE_NAME: api
+
 jobs:
   push:
     runs-on: ubuntu-latest
+
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
@@ -24,8 +25,8 @@ jobs:
       - name: Pull pre-release
         run: docker pull ${{ env.PRERELEASE_IMAGE_NAME }}
       
-      - name: Retag pre-release
-        id: retag
+      - name: Find New Version
+        id: version
         run: |
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
@@ -36,27 +37,24 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "master" ] && VERSION=latest
           
-          echo IMAGE_ID=${{ env.BASE_IMAGE_NAME }}
           echo VERSION=$VERSION
-          
-          docker tag "${{ env.PRERELEASE_IMAGE_NAME }}" ${{ env.BASE_IMAGE_NAME }}:$VERSION
-          echo "::set-output name=RELEASE_IMAGE::${{ env.BASE_IMAGE_NAME }}:${VERSION}"
+          echo "::set-output name=RELEASE_VERSION::${VERSION}"
         
       - name: Push release
-        run: docker push ${{ steps.retag.outputs.RELEASE_IMAGE }}
+        run: |
+          docker tag "${{ env.PRERELEASE_IMAGE_NAME }}" ${{ env.BASE_IMAGE_NAME }}:${{ steps.version.outputs.RELEASE_VERSION }}
+          docker push ${{ env.BASE_IMAGE_NAME }}:${{ steps.version.outputs.RELEASE_VERSION }}
         
       - name: Deploy with SSH
         uses: appleboy/ssh-action@master
         with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
           host: ${{ secrets.PROD_HOST }}
           username: ${{ secrets.PROD_USERNAME }}
+          password: ${{ secrets.PROD_PASSWORD }}
           script: |
-            cd /opt/parser_env
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login https://ghcr.io -u "${{ github.actor }}" --password-stdin
+            cd /opt/hooka
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            sed -i "s/tatosea\/hookah-mixes-server:.*/tatosea\/hookah-mixes-server:${{ steps.version.outputs.RELEASE_VERSION }}/g" docker-compose.yml
             docker-compose pull ${{ env.SERVICE_NAME }}
             docker-compose up -d ${{ env.SERVICE_NAME }}
-            docker logout https://ghcr.io
-        
-        
-      
+            docker logout ghcr.io
