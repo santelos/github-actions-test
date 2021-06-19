@@ -29,21 +29,20 @@ jobs:
         id: nextvers
         run: |
           if [ "${{ github.event.inputs.version }}" = "major" ]; then 
-            echo "::set-output name=RELEASE_VERSION::${{ steps.semvers.outputs.major }}"
+            echo "::set-output name=RELEASE_VERSION::${{ steps.semvers.outputs.v_major }}"
           elif [ "${{ github.event.inputs.version }}" = "minor" ]; then
-            echo "::set-output name=RELEASE_VERSION::${{ steps.semvers.outputs.minor }}"
+            echo "::set-output name=RELEASE_VERSION::${{ steps.semvers.outputs.v_minor }}"
           elif [ "${{ github.event.inputs.version }}" = "patch" ]; then
-            echo "::set-output name=RELEASE_VERSION::${{ steps.semvers.outputs.patch }}"
+            echo "::set-output name=RELEASE_VERSION::${{ steps.semvers.outputs.v_patch }}"
           else
             echo "Please specify either 'major', 'minor', 'patch' version"
             exit 1
           fi
 
-      - uses: release-drafter/release-drafter@v5
-        name: Publish the release with Release Drafter
+      - uses: actions/create-release@v1
+        name: Create release
         with:
-          disable-autolabeler: true
-          publish: true
-          version: ${{ steps.nextvers.outputs.RELEASE_VERSION }}
+          tag_name: ${{ steps.nextvers.outputs.RELEASE_VERSION }}
+          release_name: Release ${{ steps.nextvers.outputs.RELEASE_VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
